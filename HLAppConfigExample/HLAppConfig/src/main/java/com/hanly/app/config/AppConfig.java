@@ -2,6 +2,8 @@ package com.hanly.app.config;
 
 import android.content.Context;
 
+import org.json.JSONObject;
+
 /**
  * Created by HanLingye on 2017/3/29.
  */
@@ -38,6 +40,10 @@ public class AppConfig {
 
     public static void reload() {
         getConfigManager().loadRemoteConfigs();
+    }
+
+    public static void userUpdate(String url, JSONObject jsonObject) {
+        getConfigManager().userUpdate(url, jsonObject);
     }
 
     public static Object getObject(String key) {

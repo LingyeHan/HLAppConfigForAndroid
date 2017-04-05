@@ -67,7 +67,7 @@ public class ConfigFileStore implements ConfigStore {
             }
             object = new JSONObject(content);
         } catch (FileNotFoundException e) {
-            Log.e(TAG, "Error in Reading: " + e.getLocalizedMessage());
+            Log.i(TAG, "FileNotFound: " + e.getLocalizedMessage());
         } catch (IOException e) {
             Log.e(TAG, "Error in Reading: " + e.getLocalizedMessage());
         } catch (JSONException e) {

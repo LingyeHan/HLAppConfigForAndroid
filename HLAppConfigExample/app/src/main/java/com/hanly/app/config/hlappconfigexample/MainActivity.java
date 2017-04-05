@@ -9,6 +9,9 @@ import android.widget.Button;
 
 import com.hanly.app.config.AppConfig;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,12 +30,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                login();
-//            }
-//        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                login();
+            }
+        }).start();
 
 
         AppConfig.start("https://test.zuifuli.io/api/duncan/v1/app/config/fetch?v=1.0.0", "HLAppConfig.json", getApplicationContext());
@@ -41,6 +44,18 @@ public class MainActivity extends AppCompatActivity {
         reloadBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 AppConfig.reload();
+                try {
+                    Thread.currentThread().sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                JSONObject body = null;
+                try {
+                    body = new JSONObject("{\"version\":\"1.0.0\",\"ckey\":\"user_order\",\"value\":\"1,4,3,2\"}");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                AppConfig.userUpdate("https://test.zuifuli.io/api/duncan/v1/app/config/userUpdate", body);
             }
         });
 

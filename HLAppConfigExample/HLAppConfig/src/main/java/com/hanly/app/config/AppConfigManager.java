@@ -28,7 +28,10 @@ public class AppConfigManager {
     }
 
     public ConfigRequest getConfigRequest() {
-        return configRequest = configRequest != null ? configRequest : new DefaultConfigRequest();
+        if (configRequest == null) {
+            configRequest = new DefaultConfigRequest();
+        }
+        return configRequest;
     }
 
     public AppConfigManager(String baseURL, String localFile, Context context) {
@@ -71,7 +74,11 @@ public class AppConfigManager {
             }
         });
 
-        configRequest.execute(this.baseURL);
+        getConfigRequest().fetch(this.baseURL);
+    }
+
+    public void userUpdate(String url, JSONObject jsonObject) {
+        getConfigRequest().update(url, jsonObject);
     }
 
     public AppConfigModel getConfigModel() {
