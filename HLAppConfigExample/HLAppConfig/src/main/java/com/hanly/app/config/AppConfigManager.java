@@ -13,30 +13,24 @@ public class AppConfigManager {
 
     private static final String TAG = AppConfigManager.class.getSimpleName();
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
-    private String baseURL;
+    private final AppConfigSettings configSettings;
+    private final ConfigRequest configRequest;
+    private final ConfigStore configStore;
 
     private AppConfigModel configModel;
     private AppConfigModel defaultConfigModel;
 
-    private ConfigRequest configRequest;
-    private ConfigStore configStore;
 
-    public void setConfigRequest(ConfigRequest configRequest) {
-        this.configRequest = configRequest;
-    }
-
-    public ConfigRequest getConfigRequest() {
-        if (configRequest == null) {
-            configRequest = new DefaultConfigRequest();
+    public AppConfigManager(AppConfigSettings configSettings, Context context) {
+        this.configSettings = configSettings;
+        if (configSettings.getConfigRequest() == null) {
+            this.configRequest = new DefaultConfigRequest();
+        } else {
+            this.configRequest = configSettings.getConfigRequest();
         }
-        return configRequest;
-    }
-
-    public AppConfigManager(String baseURL, String localFile, Context context) {
-        this.baseURL = baseURL;
-        configStore = new ConfigFileStore(localFile, context);
+        this.configStore = new ConfigFileStore(configSettings.getLocalFile(), context);
     }
 
     public void loadLocalConfigs() {
@@ -48,7 +42,7 @@ public class AppConfigManager {
     }
 
     public void loadRemoteConfigs() {
-        getConfigRequest().setResultHandler(new RequestResultHandler() {
+        configRequest.setResultHandler(new RequestResultHandler() {
 
             @Override
             public void handle(Object data) {
@@ -60,7 +54,7 @@ public class AppConfigManager {
                 try {
                     jsonObject = (JSONObject) data;
                     if (jsonObject.getInt("code") != 0) {
-                        Log.e(TAG, "The server did not return to the configuration. Response: "+ jsonObject);
+                        Log.e(TAG, "The server did not return to the configuration. Response: " + jsonObject);
                         return;
                     }
                     synchronized (lock) {
@@ -74,11 +68,11 @@ public class AppConfigManager {
             }
         });
 
-        getConfigRequest().fetch(this.baseURL);
+        configRequest.fetch(configSettings.getBaseURL() + configSettings.getFetchPath());
     }
 
-    public void userUpdate(String url, JSONObject jsonObject) {
-        getConfigRequest().update(url, jsonObject);
+    public void userUpdate(JSONObject jsonObject) {
+        configRequest.update(configSettings.getBaseURL() + configSettings.getUpdatePath(), jsonObject);
     }
 
     public AppConfigModel getConfigModel() {

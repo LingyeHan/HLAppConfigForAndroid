@@ -44,8 +44,6 @@ public class ConfigFileStore implements ConfigStore {
     public Object readConfigs() {
         Object object = null;
         try {
-            String content = null;
-
             StringBuilder sb = new StringBuilder();
             InputStream inputStream = context.openFileInput(filename);
             if (inputStream != null) {
@@ -60,6 +58,7 @@ public class ConfigFileStore implements ConfigStore {
                 inputStream.close();
             }
 
+            String content;
             if (sb.length() > 0) {
                 content = sb.toString();
             } else {

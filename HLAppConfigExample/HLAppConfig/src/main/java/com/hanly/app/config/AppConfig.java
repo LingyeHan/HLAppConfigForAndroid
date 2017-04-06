@@ -20,21 +20,12 @@ public class AppConfig {
         return configManager;
     }
 
-    public static void start(String url, Context context) {
-        AppConfig.start(url, null, context);
-    }
-
-    public static void start(String url, String localFile, Context context) {
-        AppConfig.start(url, localFile, null, context);
-    }
-
-    public static void start(String url, String localFile, ConfigRequest configRequest, Context context) {
+    public static void start(AppConfigSettings configSettings, Context context) {
         if (configManager != null) {
             return;
         }
 
-        configManager = new AppConfigManager(url, localFile, context);
-        configManager.setConfigRequest(configRequest);
+        configManager = new AppConfigManager(configSettings, context);
         configManager.loadLocalConfigs();
     }
 
@@ -43,7 +34,7 @@ public class AppConfig {
     }
 
     public static void userUpdate(String url, JSONObject jsonObject) {
-        getConfigManager().userUpdate(url, jsonObject);
+        getConfigManager().userUpdate(jsonObject);
     }
 
     public static Object getObject(String key) {

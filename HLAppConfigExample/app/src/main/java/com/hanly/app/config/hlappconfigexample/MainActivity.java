@@ -8,6 +8,7 @@ import android.webkit.CookieManager;
 import android.widget.Button;
 
 import com.hanly.app.config.AppConfig;
+import com.hanly.app.config.AppConfigSettings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-
-        AppConfig.start("https://test.zuifuli.io/api/duncan/v1/app/config/fetch?v=1.0.0", "HLAppConfig.json", getApplicationContext());
+        AppConfigSettings configSettings = new AppConfigSettings("https://test.zuifuli.io/api/duncan/v1/app/config", "/fetch?v=1.0.0", "/userUpdate");
+        AppConfig.start(configSettings, getApplicationContext());
 
         final Button reloadBtn = (Button) findViewById(R.id.reloadBtn);
         reloadBtn.setOnClickListener(new View.OnClickListener() {

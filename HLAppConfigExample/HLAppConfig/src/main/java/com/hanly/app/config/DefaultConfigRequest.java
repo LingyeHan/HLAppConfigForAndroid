@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -41,56 +40,11 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
         new UpdateConfigTask().execute(url, jsonObject);
     }
 
-    private class FetchConfigTask extends AsyncTask<String, Void, String> {
+    private class FetchConfigTask extends ConfigAsyncTask {
+
         @Override
-        protected String doInBackground(String... params) {
-
-            HttpURLConnection httpConnection = null;
-            BufferedReader reader = null;
-            try {
-
-                httpConnection = makeRequest(params[0], "GET", null, null);
-
-                int statusCode = httpConnection.getResponseCode();
-                if (statusCode != HttpURLConnection.HTTP_OK) {
-                    Log.e(TAG, "Request failed. statusCode: " + statusCode + ", message: " + httpConnection.getResponseMessage());
-                    return null;
-                }
-
-                InputStream inputStream = httpConnection.getInputStream();
-                if (inputStream == null) {
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    return null;
-                }
-
-                return buffer.toString();
-            } catch (IOException ioe) {
-                Log.e(TAG, "Request server config error", ioe);
-            } catch (Exception e) {
-                Log.e(TAG, "Request server config error", e);
-            } finally {
-                if (httpConnection != null) {
-                    httpConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(TAG, "Error closing stream", e);
-                    }
-                }
-            }
-            return null;
+        protected HttpURLConnection getHttpURLConnection(Object... params) throws IOException {
+            return makeRequest((String) params[0], "GET", null, null);
         }
 
         @Override
@@ -101,14 +55,42 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
 
     }
 
-    private class UpdateConfigTask extends AsyncTask<Object, Void, String> {
+    private class UpdateConfigTask extends ConfigAsyncTask {
+
+        @Override
+        protected HttpURLConnection getHttpURLConnection(Object... params) throws IOException {
+            return makeRequest((String) params[0], "POST", null, (JSONObject) params[1]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(result);
+                if (jsonObject.getInt("code") != 0) {
+                    Log.e(TAG, "The server did not return to the configuration. Response: " + jsonObject);
+                } else {
+                    Log.i(TAG, "Update config successfully");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "JSON format invalid", e);
+            }
+        }
+
+    }
+
+    private abstract class ConfigAsyncTask extends AsyncTask<Object, Void, String> {
+
+        protected abstract HttpURLConnection getHttpURLConnection(Object... params) throws IOException;
+
         @Override
         protected String doInBackground(Object... params) {
 
             HttpURLConnection httpConnection = null;
             BufferedReader reader = null;
             try {
-                httpConnection = makeRequest((String) params[0], "POST", null, (JSONObject) params[1]);
+                httpConnection = getHttpURLConnection(params);
 
                 int statusCode = httpConnection.getResponseCode();
                 if (statusCode != HttpURLConnection.HTTP_OK) {
@@ -122,19 +104,16 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
                 }
                 reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
+                    sb.append(line).append("\n");
                 }
-
-                if (buffer.length() == 0) {
+                if (sb.length() == 0) {
                     return null;
                 }
 
-                return buffer.toString();
-            } catch (IOException ioe) {
-                Log.e(TAG, "Request server config error", ioe);
+                return sb.toString();
             } catch (Exception e) {
                 Log.e(TAG, "Request server config error", e);
             } finally {
@@ -151,26 +130,9 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
             }
             return null;
         }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            JSONObject jsonObject;
-            try {
-                jsonObject = new JSONObject(result);
-                if (jsonObject.getInt("code") != 0) {
-                    Log.e(TAG, "The server did not return to the configuration. Response: "+ jsonObject);
-                } else {
-                    Log.i(TAG, "Update config successfully");
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "JSON format invalid", e);
-            }
-        }
-
     }
 
-    public HttpURLConnection makeRequest(String url, String method, String cookie, JSONObject body) throws IOException {
+    private HttpURLConnection makeRequest(String url, String method, String cookie, JSONObject body) throws IOException {
 
         HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
 
@@ -207,7 +169,7 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
         return urlConnection;
     }
 
-    public String buildPostParameters(Object content) {
+    private String buildPostParameters(Object content) {
         String output = null;
         if ((content instanceof String) ||
                 (content instanceof JSONObject) ||
@@ -216,15 +178,13 @@ public class DefaultConfigRequest extends AbstractConfigRequest {
         } else if (content instanceof Map) {
             Uri.Builder builder = new Uri.Builder();
             HashMap hashMap = (HashMap) content;
-            if (hashMap != null) {
-                Iterator entries = hashMap.entrySet().iterator();
-                while (entries.hasNext()) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
-                    entries.remove(); // avoids a ConcurrentModificationException
-                }
-                output = builder.build().getEncodedQuery();
+            Iterator entries = hashMap.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                entries.remove(); // avoids a ConcurrentModificationException
             }
+            output = builder.build().getEncodedQuery();
         }
 
         return output;
