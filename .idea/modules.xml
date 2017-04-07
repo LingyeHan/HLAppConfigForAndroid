@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HLAppConfig/HLAppConfig.iml" filepath="$PROJECT_DIR$/HLAppConfig/HLAppConfig.iml" />
-      <module fileurl="file://$PROJECT_DIR$/HLAppConfigExample.iml" filepath="$PROJECT_DIR$/HLAppConfigExample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/HLAppConfigForAndroid.iml" filepath="$PROJECT_DIR$/HLAppConfigForAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

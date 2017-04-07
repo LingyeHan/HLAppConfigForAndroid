@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
 
-        AppConfigSettings configSettings = new AppConfigSettings("https://test.zuifuli.io/api/duncan/v1/app/config", "/fetch?v=1.0.0", "/userUpdate");
+        AppConfigSettings configSettings = new AppConfigSettings("", "/fetch?v=1.0.0", "/userUpdate");
         AppConfig.start(configSettings, getApplicationContext());
 
         final Button reloadBtn = (Button) findViewById(R.id.reloadBtn);
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                AppConfig.userUpdate("https://test.zuifuli.io/api/duncan/v1/app/config/userUpdate", body);
+                AppConfig.userUpdate("", body);
             }
         });
 
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         HttpURLConnection httpConnection = null;
         BufferedReader reader = null;
         try {
-            URL url = new URL("https://test.zuifuli.io/api/customer/v1/account/login");
+            URL url = new URL("");
 
             httpConnection = (HttpURLConnection) url.openConnection();
             httpConnection.setDoInput(true);
